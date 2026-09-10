@@ -2448,3 +2448,42 @@ Packaging/documentation update; version remains `2.9`.
 
 No application behavior, theme, parser, serial capture, Finder or version
 change.
+
+
+## v2.9 — Parser resynchronisation, Bus Health and documentation fixes
+
+Corrective update; application version remains `2.9`.
+
+- Package source folder renamed from `MBSniffer v2.9` to `MBSniffer` so the root
+  `MBSniffer.bat` launcher and documented build path resolve correctly.
+- Reworked RTU resynchronisation to scan the full remaining burst using only
+  structurally recognised Modbus frame candidates.
+- Removed the generic CRC brute-force length scan from each resynchronisation
+  offset. This prevents multi-second parser stalls on long noise buffers.
+- Unsupported/unknown Function Codes may only be accepted by CRC when they
+  occupy the complete remaining burst; CRC-only candidates are never used while
+  scanning arbitrary offsets. This strongly reduces accidental phantom frames
+  in random noise.
+- If the bytes immediately before a recovered valid frame exactly match a known
+  frame shape but have an invalid CRC, that segment is now emitted as `CRC ERROR`
+  instead of `RAW/UNSYNC`.
+- Kept the explicit CRC-error counter, but replaced the misleading Bus Health
+  `CRC error rate` with `Tráfego não validado`: percentage of captured bytes that
+  belong to CRC-invalid frames or RAW blocks.
+- Revised end-user Portuguese for Portugal (`descodificar`, `descodificação`,
+  etc.) and adjusted several visible labels.
+- Replaced the long GitHub README with a concise Portuguese README and added
+  `README.en.md`, linked by a language selector at the top of both files.
+- Removed version history from the GitHub README.
+
+
+
+## v2.9 — Versioned source-folder packaging convention
+
+Packaging convention update; application version remains `2.9`.
+
+- The source folder that contains the Python files is now named exactly `MBSniffer v2.9`.
+- Future packages must use the same convention: `MBSniffer vX.Y`, with no additional suffix or descriptive text in that folder name.
+- Root `MBSniffer.bat` now resolves `MBSniffer v2.9\MBSniffer.py`.
+- GitHub/end-user build instructions now point to `MBSniffer v2.9\build_exe.bat`.
+- The `%APPDATA%\MBSniffer\settings.json` application-data directory is unchanged; this naming rule applies only to the packaged source folder.

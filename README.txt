@@ -74,7 +74,7 @@ cores por extenso fica documentado apenas em Ajuda / Ligações.
 
 FRAME INSPECTOR
 ---------------
-Ao selecionar uma frame, o painel inferior apresenta:
+Ao selecionar um frame, o painel inferior apresenta:
 
 - Slave;
 - Tipo;
@@ -87,7 +87,7 @@ Ao selecionar uma frame, o painel inferior apresenta:
 - Resultado;
 - CRC recebido;
 - CRC calculado;
-- dados / registers / Exception;
+- dados / registos / Exception;
 - Raw Hex.
 
 O painel pode ser "Recolher" / "Expandir" para libertar espaço para Tráfego.
@@ -97,7 +97,7 @@ MENU DE CONTEXTO
 Botão direito numa frame:
 
 - Copiar Raw Hex;
-- Copiar frame decodificada;
+- Copiar frame descodificado;
 - Filtrar por este Slave;
 - Filtrar por este FC;
 - Mostrar apenas esta transação;
@@ -114,9 +114,14 @@ O separador Bus Health inclui:
 - utilização aproximada do bus;
 - response time médio, mínimo, máximo e P95;
 - Slave mais lento;
-- CRC error rate;
+- percentagem de bytes não validados;
 - timeout rate;
 - Exceptions por Slave.
+
+A percentagem de bytes não validados é calculada sobre os bytes observados que
+pertencem a frames com CRC inválido ou a blocos RAW. É um indicador de captura
+não validada, não uma prova isolada de ruído/EMI. Parâmetros série errados, uma
+captura incompleta ou funções não suportadas pelo parser também podem gerar RAW.
 
 A utilização do barramento é uma estimativa baseada nos bytes observados e nos
 parâmetros série configurados. Não substitui um osciloscópio/analisador lógico.
@@ -141,15 +146,24 @@ O log TXT de uma captura real continua a ser o registo completo em disco.
 
 PARSER / RESSINCRONIZAÇÃO
 -------------------------
-Quando perde sincronismo, o parser procura agora o próximo frame CRC-válido em
-todo o restante burst recebido. O antigo limite de 32 bytes foi removido, pelo
-que um burst de ruído longo já não engole frames Modbus válidos posteriores.
+Quando perde sincronismo, o parser procura no restante burst o próximo frame
+Modbus com estrutura reconhecida e CRC válido. A pesquisa percorre todo o burst,
+mas deixa de testar por força bruta centenas de comprimentos em cada posição.
+Assim recupera frames válidos após ruído longo sem bloquear a receção durante
+vários segundos.
 
-LIGHT / DARK MODE
+Se os bytes imediatamente anteriores ao ponto recuperado tiverem exatamente a
+estrutura de um frame Modbus conhecido mas CRC inválido, são classificados como
+CRC ERROR. Ruído sem uma estrutura de frame reconhecível continua como RAW.
+
+Durante a ressincronização não são aceites frames apenas por coincidência de CRC.
+Isto reduz fortemente falsos frames ocasionais em sequências de ruído aleatório.
+
+MODO CLARO / ESCURO
 -----------------
-O toggle global fica no canto superior direito.
+O seletor global fica no canto superior direito.
 
-Light e Dark usam exatamente a mesma construção da interface; mudar o toggle
+Os modos claro e escuro usam exatamente a mesma construção da interface; mudar o seletor
 altera apenas cores. A escolha fica guardada automaticamente.
 
 PREFERÊNCIAS GUARDADAS
@@ -160,13 +174,13 @@ Ficheiro único:
 
 São guardados:
 
-- Light / Dark mode;
+- modo claro/escuro;
 - último separador principal;
 - modo físico;
 - Baud, Data bits, Parity e Stop bits;
 - Frame gap Auto/Manual e Gap manual;
 - Pending timeout;
-- Auto-scroll;
+- deslocamento automático;
 - Separar transações;
 - Realçar resultados;
 - opções do Bus Slave Finder já existentes.
@@ -190,7 +204,7 @@ BUILD DO EXE
 ------------
 Executar:
 
-    MBSniffer\build_exe.bat
+    MBSniffer v2.9\build_exe.bat
 
 O resultado é criado diretamente na raiz:
 
@@ -211,11 +225,11 @@ REQUISITOS
 Windows 10/11 x64.
 Python 3.10+ quando executado através do BAT/Python.
 
-SCROLLBARS
+BARRAS DE DESLOCAMENTO
 ----------
-As scrollbars usam um desenho minimalista de 6 px, sem botões de seta. A pista
+As barras de deslocamento usam um desenho minimalista de 6 px, sem botões de seta. A pista
 tem a mesma cor do fundo do conteúdo e fica visualmente invisível; apenas o
 cursor móvel fica aparente.
 
-A roda do rato só atua quando o ponteiro está sobre uma scrollbar. Fora das
-scrollbars não desloca Text/Treeview nem muda de separador do programa.
+A roda do rato só atua quando o ponteiro está sobre uma barra de deslocamento. Fora das
+barras de deslocamento não desloca Text/Treeview nem muda de separador do programa.
