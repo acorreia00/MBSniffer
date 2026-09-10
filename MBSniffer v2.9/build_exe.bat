@@ -1,0 +1,137 @@
+@echo off
+setlocal EnableExtensions
+title Build MBSniffer 2.9
+
+rem Normalizar caminhos sem barra final. Isto evita problemas de parsing
+rem do Windows/Python quando um argumento quoted termina em "\".
+for %%I in ("%~dp0.") do set "APPDIR=%%~fI"
+for %%I in ("%APPDIR%\..") do set "DISTDIR=%%~fI"
+
+set "SCRIPT=%APPDIR%\MBSniffer.py"
+set "ICON=%APPDIR%\MBSniffer.ico"
+set "WORKDIR=%APPDIR%\build"
+set "SPECFILE=%APPDIR%\MBSniffer.spec"
+set "PYRUN="
+
+cd /d "%APPDIR%"
+
+if not exist "%SCRIPT%" (
+    echo.
+    echo ERRO: MBSniffer.py nao foi encontrado.
+    echo.
+    pause
+    exit /b 1
+)
+
+rem ============================================================
+rem 1. Procurar Python 3
+rem ============================================================
+py -3 -c "import sys; assert sys.version_info.major == 3" >nul 2>&1
+if not errorlevel 1 (
+    set "PYRUN=py -3"
+    goto PYTHON_OK
+)
+
+python -c "import sys; assert sys.version_info.major == 3" >nul 2>&1
+if not errorlevel 1 (
+    set "PYRUN=python"
+    goto PYTHON_OK
+)
+
+if exist "%LocalAppData%\Programs\Python\Python313\python.exe" (
+    set PYRUN="%LocalAppData%\Programs\Python\Python313\python.exe"
+    goto PYTHON_OK
+)
+
+echo.
+echo ERRO: Python 3 nao foi encontrado.
+echo Executa primeiro MBSniffer.bat para instalar/verificar as dependencias.
+echo.
+pause
+exit /b 1
+
+
+:PYTHON_OK
+rem ============================================================
+rem 2. Instalar/atualizar dependencias de build
+rem ============================================================
+echo.
+echo [1/3] A verificar pyserial e PyInstaller...
+%PYRUN% -m pip install --upgrade pyserial pyinstaller
+if errorlevel 1 (
+    echo.
+    echo ERRO ao instalar pyserial/PyInstaller.
+    echo.
+    pause
+    exit /b 1
+)
+
+rem ============================================================
+rem 3. Limpar builds anteriores
+rem ============================================================
+echo.
+echo [2/3] A limpar build anterior...
+if exist "%WORKDIR%" rmdir /s /q "%WORKDIR%"
+if exist "%SPECFILE%" del /q "%SPECFILE%"
+if exist "%DISTDIR%\MBSniffer.exe" del /q "%DISTDIR%\MBSniffer.exe"
+
+rem ============================================================
+rem 4. Criar EXE
+rem ============================================================
+echo.
+echo [3/3] A criar MBSniffer.exe...
+
+if exist "%ICON%" (
+    %PYRUN% -m PyInstaller ^
+      --noconfirm ^
+      --clean ^
+      --onefile ^
+      --windowed ^
+      --name MBSniffer ^
+      --distpath "%DISTDIR%" ^
+      --workpath "%WORKDIR%" ^
+      --icon "%ICON%" ^
+      --add-data "%ICON%;." ^
+      "%SCRIPT%"
+) else (
+    echo AVISO: MBSniffer.ico nao foi encontrado.
+    %PYRUN% -m PyInstaller ^
+      --noconfirm ^
+      --clean ^
+      --onefile ^
+      --windowed ^
+      --name MBSniffer ^
+      --distpath "%DISTDIR%" ^
+      --workpath "%WORKDIR%" ^
+      "%SCRIPT%"
+)
+
+if errorlevel 1 (
+    echo.
+    echo ERRO: o build falhou.
+    echo.
+    pause
+    exit /b 1
+)
+
+if not exist "%DISTDIR%\MBSniffer.exe" (
+    echo.
+    echo ERRO: o PyInstaller terminou sem criar:
+    echo   %DISTDIR%\MBSniffer.exe
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ============================================================
+echo BUILD CONCLUIDO
+echo ============================================================
+echo.
+echo Executavel criado em:
+echo   %DISTDIR%\MBSniffer.exe
+echo.
+echo O icone MBSniffer.ico foi aplicado ao EXE e incluido
+echo como recurso para a janela/barra de tarefas.
+echo.
+pause
