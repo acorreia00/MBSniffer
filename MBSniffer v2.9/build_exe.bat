@@ -56,7 +56,7 @@ rem ============================================================
 rem 2. Instalar/atualizar dependencias de build
 rem ============================================================
 echo.
-echo [1/3] A verificar pyserial e PyInstaller...
+echo [1/4] A verificar pyserial e PyInstaller...
 %PYRUN% -m pip install --upgrade pyserial pyinstaller
 if errorlevel 1 (
     echo.
@@ -67,19 +67,33 @@ if errorlevel 1 (
 )
 
 rem ============================================================
-rem 3. Limpar builds anteriores
+rem 3. Executar testes de regressao antes do build
 rem ============================================================
 echo.
-echo [2/3] A limpar build anterior...
+echo [2/4] A executar testes de regressao...
+%PYRUN% -m unittest discover -s tests -p "test_*.py" -v
+if errorlevel 1 (
+    echo.
+    echo ERRO: os testes de regressao falharam. Build cancelado.
+    echo.
+    pause
+    exit /b 1
+)
+
+rem ============================================================
+rem 4. Limpar builds anteriores
+rem ============================================================
+echo.
+echo [3/4] A limpar build anterior...
 if exist "%WORKDIR%" rmdir /s /q "%WORKDIR%"
 if exist "%SPECFILE%" del /q "%SPECFILE%"
 if exist "%DISTDIR%\MBSniffer.exe" del /q "%DISTDIR%\MBSniffer.exe"
 
 rem ============================================================
-rem 4. Criar EXE
+rem 5. Criar EXE
 rem ============================================================
 echo.
-echo [3/3] A criar MBSniffer.exe...
+echo [4/4] A criar MBSniffer.exe...
 
 if exist "%ICON%" (
     %PYRUN% -m PyInstaller ^

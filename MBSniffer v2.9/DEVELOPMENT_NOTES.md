@@ -2494,3 +2494,83 @@ Packaging convention update; application version remains `2.9`.
 - Reworded the README explanation of COM-port handling so it states plainly that the selected COM port is not saved between application sessions.
 - Applied the same clarification to the English README.
 - Updated an internal packaging docstring to reflect the versioned source-folder naming convention (`MBSniffer vX.Y`).
+
+
+## v2.9 — RTU frame-gap compliance, regression tests and Device Identification
+
+Corrective/feature update; application version remains `2.9`.
+
+- Sniffer serial label changed from `Baud` to `Baud rate`; existing English technical terminology elsewhere was intentionally preserved.
+- Added a shared Modbus RTU t3.5 helper:
+  - baud rates <= 19200 bit/s use 3.5 character times;
+  - baud rates > 19200 bit/s use the fixed 1.750 ms inter-frame delay recommended by Modbus Serial Line V1.02.
+- The same t3.5 helper is also used by Bus Slave Finder timing/retry logic so active queries do not retain a shorter high-baud gap.
+- Added optional Bus Slave Finder `Device Identification (FC43/14)`.
+  - Disabled by default.
+  - Sent only after the Slave has already been found by FC03/FC04.
+  - Uses MEI type 0x0E / Basic Device Identification (Read Device ID code 0x01).
+  - Parses `VendorName`, `ProductCode` and `MajorMinorRevision`.
+  - Supports `More Follows` pagination with a bounded page count.
+  - A Device Identification exception or no response does not invalidate the already discovered Slave.
+  - Result table now includes a `Device Identification` column and a horizontal scrollbar.
+- Added standard-library `unittest` regression suite under `tests/`.
+- Added `run_tests.bat` for manual regression execution.
+- `build_exe.bat` now runs the regression suite before PyInstaller and cancels the build if any test fails.
+- Regression coverage includes:
+  - CRC and supported parser frame shapes;
+  - CRC-invalid frame followed by a valid frame;
+  - long-noise resynchronisation;
+  - deterministic random-noise robustness;
+  - request/response pairing and timeouts;
+  - automatic/manual frame-gap behaviour;
+  - Slave Finder normal/exception responses;
+  - FC43/14 request/response, CRC rejection, request echo handling and `More Follows`.
+
+No Portuguese technical terminology was broadly rewritten in this update; the previous PT-PT/English terminology mix is intentionally retained.
+- UI: moved `Device Identification (FC43/14)` beside `FC04 fallback` in the Bus Slave Finder options row; no functional behaviour changed.
+
+## v2.9 — Bus Slave Finder results table without horizontal scrolling
+
+UI refinement; application version remains `2.9`.
+
+- Removed the horizontal scrollbar and `xscrollcommand` from the `Slaves encontrados` Treeview.
+- The short columns (`Slave`, `Baud`, `Config.`, `FC`, `Resp. (ms)`) keep compact fixed widths.
+- `Resultado`, `Device Identification` and `Raw Hex` dynamically share the remaining viewport width.
+- Column widths are recalculated on Treeview resize so the complete results table remains visible without horizontal scrolling, matching the Traffic table behaviour.
+
+## v2.9 — Table mouse-wheel scrolling + Bus Health spacing
+
+Targeted UI/input correction; version remains `2.9`.
+
+### Mouse wheel
+- Corrected the application-level mouse-wheel guard in `mb_gui.py`.
+- Vertical wheel scrolling is now allowed over:
+  - Traffic `Treeview`;
+  - Bus Slave Finder `Slaves encontrados` `Treeview`;
+  - `Raw Hex / Log` and Help `Text` widgets;
+  - scrollbar widgets.
+- Wheel events over `ttk.Notebook`, notebook tabs/pages and other non-scrollable
+  UI areas are still consumed before ttk class bindings run.
+- This preserves normal table/text scrolling without allowing the mouse wheel to
+  cycle between `Tráfego`, `Raw Hex / Log`, `Bus Health` or other tabs.
+
+### Bus Health
+- Compact Bus Health rows now share the available card height equally instead of
+  accumulating at the top of each rectangle.
+- Removed the rigid percentage split previously imposed on the four compact
+  metric columns.
+- Label columns now absorb spare width while value columns keep their natural
+  width, preventing long metrics from being clipped by a neighbouring column.
+- At narrower card widths, labels may wrap instead of crossing or overlapping
+  another metric/value pair.
+- Full mode also distributes its rows evenly over the available height.
+- Light/Dark colour behavior and Bus Health calculations are unchanged.
+
+### Validation
+- Existing 20 automated regression tests pass.
+- GUI smoke test under Xvfb confirmed wheel scrolling changes the vertical
+  viewport in both Traffic and Slave Finder Treeviews.
+- The same input guard returns `break` for Notebook wheel events, preserving the
+  selected tab.
+- Representative Bus Health values were geometry-checked at 1280x780: all
+  labels/values remained within their LabelFrame bounds with no overlap.

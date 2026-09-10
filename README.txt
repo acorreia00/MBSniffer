@@ -17,6 +17,8 @@ NOVIDADES v2.9
 - Exportação da sessão para CSV.
 - Simulação de diagnóstico com anomalias em todas as execuções; "Realçar resultados" controla apenas as cores.
 - Correção de ressincronização do parser após bursts longos de ruído.
+- Frame gap Auto alinhado com Modbus RTU: acima de 19200 bit/s usa t3.5 fixo de 1,750 ms.
+- Device Identification (FC43/14) opcional no Bus Slave Finder.
 - Tema/layout Light/Dark da v2.8 mantido.
 
 TRÁFEGO E FILTROS
@@ -159,6 +161,26 @@ CRC ERROR. Ruído sem uma estrutura de frame reconhecível continua como RAW.
 Durante a ressincronização não são aceites frames apenas por coincidência de CRC.
 Isto reduz fortemente falsos frames ocasionais em sequências de ruído aleatório.
 
+FRAME GAP AUTO
+--------------
+Em modo Auto, o Sniffer calcula t3.5 a partir de 3,5 tempos de carácter até
+19200 bit/s, inclusive. Acima de 19200 bit/s utiliza o valor fixo recomendado
+de 1,750 ms. O modo Manual não é alterado.
+
+BUS SLAVE FINDER / DEVICE IDENTIFICATION
+----------------------------------------
+O Bus Slave Finder continua a localizar Slaves através de FC03 e, opcionalmente,
+FC04 fallback.
+
+A opção "Device Identification (FC43/14)" vem desligada por defeito. Quando
+ativada, é enviada apenas depois de um Slave já ter sido encontrado. O Finder
+tenta ler Basic Device Identification e apresenta, quando disponíveis:
+
+    VendorName | ProductCode | MajorMinorRevision
+
+Se FC43/14 não for suportado, devolver uma Modbus Exception ou não responder a
+essa função não invalida o Slave que já tinha sido encontrado.
+
 MODO CLARO / ESCURO
 -----------------
 O seletor global fica no canto superior direito.
@@ -183,7 +205,7 @@ São guardados:
 - deslocamento automático;
 - Separar transações;
 - Realçar resultados;
-- opções do Bus Slave Finder já existentes.
+- opções do Bus Slave Finder, incluindo FC04 fallback e Device Identification.
 
 Não são guardados:
 
@@ -206,9 +228,19 @@ Executar:
 
     MBSniffer v2.9\build_exe.bat
 
+Antes do build, os testes de regressão são executados automaticamente. Se algum teste falhar, o build é cancelado.
+
 O resultado é criado diretamente na raiz:
 
     MBSniffer.exe
+
+TESTES DE REGRESSÃO
+-------------------
+Podem ser executados manualmente através de:
+
+    MBSniffer v2.9\run_tests.bat
+
+A suite verifica CRC, parser/ressincronização, Function Codes suportados, pairing, timeouts, frame gap Auto, Bus Slave Finder e Device Identification FC43/14.
 
 LOGS
 ----
