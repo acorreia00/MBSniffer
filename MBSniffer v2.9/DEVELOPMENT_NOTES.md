@@ -2487,3 +2487,10 @@ Packaging convention update; application version remains `2.9`.
 - Root `MBSniffer.bat` now resolves `MBSniffer v2.9\MBSniffer.py`.
 - GitHub/end-user build instructions now point to `MBSniffer v2.9\build_exe.bat`.
 - The `%APPDATA%\MBSniffer\settings.json` application-data directory is unchanged; this naming rule applies only to the packaged source folder.
+
+
+## v2.9 — README wording clarification
+
+- Reworded the README explanation of COM-port handling so it states plainly that the selected COM port is not saved between application sessions.
+- Applied the same clarification to the English README.
+- Updated an internal packaging docstring to reflect the versioned source-folder naming convention (`MBSniffer vX.Y`).
