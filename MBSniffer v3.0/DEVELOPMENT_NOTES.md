@@ -2,7 +2,7 @@
 
 ## Current version
 
-**2.9**
+**3.0**
 
 This file is the development/architecture handoff. `README.txt` is intentionally
 user-facing and must remain concise. Internal history and decisions belong here.
@@ -2574,3 +2574,32 @@ Targeted UI/input correction; version remains `2.9`.
   selected tab.
 - Representative Bus Health values were geometry-checked at 1280x780: all
   labels/values remained within their LabelFrame bounds with no overlap.
+
+## v3.0 — Interface bilingue PT-PT / English
+
+- `APP_VERSION` aumentado para `3.0`.
+- Pasta de código da release: `MBSniffer v3.0`.
+- Pacote da release: `MBSniffer_v3.0_Package.zip`.
+- Adicionado seletor global `Linguagem` ao lado do controlo de Dark Mode, com `Português` e `English`.
+- O idioma é aplicado em runtime sem reiniciar a aplicação e é persistido em `%APPDATA%\MBSniffer\settings.json`.
+- Português continua a ser a língua canónica e mantém os textos PT-PT da v2.9. Termos técnicos já existentes em inglês não foram traduzidos artificialmente.
+- Adicionado `mb_i18n.py`, isolando traduções da lógica Modbus.
+- Traduzidos para English os menus, separadores, labels, estados, mensagens/diálogos, tabelas, Bus Health, Frame Inspector, Bus Slave Finder e todo o conteúdo de Ajuda / Ligações.
+- Dados de protocolo continuam canónicos; fragmentos human-readable como `Registos=` são apresentados como `Registers=` em English.
+- A Help PT-PT original é preservada e restaurada exatamente quando se regressa a Português.
+- Suite de regressão ampliada de 20 para 26 testes com cobertura de internacionalização.
+
+
+## v3.0 — README bullet capitalisation
+
+- Capitalised the first letter of every feature bullet in both `README.md` and `README.en.md`.
+- No application behaviour or translation strings were changed.
+
+## v3.0 — Language switch geometry lock
+
+- Language changes are now text-only: switching `Português` / `English` must not move or resize the main UI panels.
+- The Sniffer top workspace uses a fixed 3:2 grid ratio independent of translated child requested widths.
+- The Dark Mode / Language overlay keeps the canonical Portuguese grid-cell widths, preventing the controls from sliding horizontally.
+- The Bus Slave Finder reserves the canonical Portuguese configuration-row height so wrapped English/PT explanatory text cannot move the Controls and Results panels vertically.
+- Traffic and Slave Finder table column widths are preserved during a language switch; normal resizing and traffic-driven autofit behaviour remain available outside the language-change event.
+- Validation compares `TLabelframe` geometry before/after PT→EN at 1050×650, 1280×780 and 1600×900; all main rectangles remain identical.

@@ -1,4 +1,4 @@
-MBSNIFFER v2.9
+MBSNIFFER v3.0
 ================
 
 MBSniffer é uma ferramenta Windows para diagnóstico de Modbus RTU.
@@ -6,8 +6,16 @@ MBSniffer é uma ferramenta Windows para diagnóstico de Modbus RTU.
 - Sniffer: passivo; não transmite dados.
 - Bus Slave Finder: ativo; transmite pedidos Modbus RTU de leitura.
 
-NOVIDADES v2.9
+NOVIDADES v3.0
 --------------
+- Seletor de Linguagem no topo da aplicação: Português ou English.
+- Mudança de idioma em tempo real, sem reiniciar a aplicação.
+- A linguagem selecionada é guardada em %APPDATA%\MBSniffer\settings.json.
+- Toda a interface, mensagens, menus, tabelas, descrições e Ajuda / Ligações têm versão English.
+- Português mantém exatamente os textos PT-PT existentes.
+- Mantidas todas as correções e funcionalidades da v2.9.
+
+BASE FUNCIONAL DA v2.9
 - Frame Inspector estruturado e recolhível.
 - Bus Health com métricas de qualidade/desempenho.
 - Filtros avançados de Tráfego.
@@ -226,7 +234,7 @@ BUILD DO EXE
 ------------
 Executar:
 
-    MBSniffer v2.9\build_exe.bat
+    MBSniffer v3.0\build_exe.bat
 
 Antes do build, os testes de regressão são executados automaticamente. Se algum teste falhar, o build é cancelado.
 
@@ -238,7 +246,7 @@ TESTES DE REGRESSÃO
 -------------------
 Podem ser executados manualmente através de:
 
-    MBSniffer v2.9\run_tests.bat
+    MBSniffer v3.0\run_tests.bat
 
 A suite verifica CRC, parser/ressincronização, Function Codes suportados, pairing, timeouts, frame gap Auto, Bus Slave Finder e Device Identification FC43/14.
 

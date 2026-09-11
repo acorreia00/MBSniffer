@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title Build MBSniffer 2.9
+title Build MBSniffer 3.0
 
 rem Normalizar caminhos sem barra final. Isto evita problemas de parsing
 rem do Windows/Python quando um argumento quoted termina em "\".

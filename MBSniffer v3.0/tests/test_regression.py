@@ -11,6 +11,17 @@ from mb_protocol import (
     parse_burst,
     split_capture_buffer,
 )
+from mb_diagnostics import inspector_values
+from mb_i18n import (
+    LANGUAGE_ENGLISH,
+    LANGUAGE_PORTUGUESE,
+    english_help_blocks,
+    normalize_language,
+    translate_details,
+    translate_runtime_text,
+    translate_text,
+)
+
 from mb_slave_finder import (
     build_device_identification_probe,
     build_discovery_probe,
@@ -343,6 +354,59 @@ class SlaveFinderRegressionTests(unittest.TestCase):
         self.assertEqual(len(serial.writes), 2)
         self.assertEqual(serial.writes[0][4], 0x00)
         self.assertEqual(serial.writes[1][4], 0x01)
+
+
+class InternationalizationRegressionTests(unittest.TestCase):
+    def test_language_normalization_defaults_to_portuguese(self):
+        self.assertEqual(normalize_language("invalid"), LANGUAGE_PORTUGUESE)
+        self.assertEqual(normalize_language(LANGUAGE_ENGLISH), LANGUAGE_ENGLISH)
+
+    def test_static_ui_translation_is_reversible(self):
+        self.assertEqual(translate_text("Configuração", LANGUAGE_ENGLISH), "Configuration")
+        self.assertEqual(translate_text("Configuration", LANGUAGE_PORTUGUESE), "Configuração")
+        self.assertEqual(translate_text("Frame gap", LANGUAGE_ENGLISH), "Frame gap")
+        # "None" is a technical parity value and must remain English in the PT UI.
+        self.assertEqual(translate_text("None", LANGUAGE_PORTUGUESE), "None")
+        self.assertEqual(translate_text("Nenhum", LANGUAGE_ENGLISH), "None")
+
+    def test_dynamic_status_translation_is_reversible(self):
+        pt = "Pesquisa concluída — 7 encontrados — 00:12"
+        en = "Scan complete — 7 found — 00:12"
+        self.assertEqual(translate_runtime_text(pt, LANGUAGE_ENGLISH), en)
+        self.assertEqual(translate_runtime_text(en, LANGUAGE_PORTUGUESE), pt)
+
+    def test_register_details_follow_language(self):
+        self.assertEqual(
+            translate_details("ByteCount=2  Registos=[42]", LANGUAGE_ENGLISH),
+            "ByteCount=2  Registers=[42]",
+        )
+        self.assertEqual(
+            translate_details("ByteCount=2  Registers=[42]", LANGUAGE_PORTUGUESE),
+            "ByteCount=2  Registos=[42]",
+        )
+
+    def test_inspector_english_labels_and_crc(self):
+        frame = append_crc(bytes.fromhex("01 03 02 00 2A"))
+        row = parse_burst(frame, "12:00:00.000", "BUS", 1.0)[0]
+        row.update({"response_text": "12.3", "matched": True})
+        values = inspector_values(row, language=LANGUAGE_ENGLISH)
+        self.assertTrue(values["type"].startswith("Type:"))
+        self.assertTrue(values["result"].startswith("Result:"))
+        self.assertTrue(values["data"].startswith("Data:"))
+        self.assertIn("Registers=[42]", values["data"])
+        self.assertIn("received", values["crc"])
+        self.assertIn("calculated", values["crc"])
+
+    def test_english_help_contains_no_portuguese_diacritics(self):
+        text = "".join(
+            block for _tag, block in english_help_blocks(
+                "20 000", "20 000", 1.0, 300.0, debug_sim=True
+            )
+        )
+        for character in "ãõçáéíóúâê":
+            self.assertNotIn(character, text.casefold())
+        self.assertIn("Bus Slave Finder — active scan", text)
+        self.assertIn("Device Identification (FC43/14)", text)
 
 
 if __name__ == "__main__":
